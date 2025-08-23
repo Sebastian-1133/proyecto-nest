@@ -1,0 +1,57 @@
+// prisma/schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      String?
+  createdAt DateTime @default(now())
+
+  cliente Cliente?
+}
+
+model Cliente {
+  id        Int     @id @default(autoincrement())
+  nombres   String
+  apellidos String
+  telefono  String?
+  curp      String?
+  usuarioId Int     @unique
+
+  usuario Usuario  @relation(fields: [usuarioId], references: [id])
+  credito Credito?
+}
+
+model Credito {
+  id        Int           @id @default(autoincrement())
+  monto     Float
+  estado    EstadoCredito
+  clienteId Int           @unique
+
+  cliente Cliente @relation(fields: [clienteId], references: [id])
+  pagos   Pago[]
+}
+
+model Pago {
+  id        Int      @id @default(autoincrement())
+  monto     Float
+  fecha     DateTime @default(now())
+  creditoId Int
+
+  credito Credito @relation(fields: [creditoId], references: [id])
+}
+
+enum EstadoCredito {
+  ACTIVO
+  LIQUIDADO
+  EN_MORA
+  CANCELADO
+}
